@@ -6,6 +6,18 @@ import { SalesService } from '../src/modules/sales/sales.service';
 import { ProductsService } from '../src/modules/products/products.service';
 import { PaymentMethod } from '@prisma/client';
 
+jest.mock('../src/config/auth', () => ({
+  auth: {
+    api: {
+      getSession: jest.fn(),
+      signUpEmail: jest.fn(),
+      signInEmail: jest.fn(),
+      signOut: jest.fn(),
+    },
+    handler: jest.fn(),
+  },
+}));
+
 describe('DukaFlow Core API E2E & Business Rules', () => {
   let app: INestApplication;
   let prisma: PrismaService;

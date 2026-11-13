@@ -1,23 +1,9 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { PurchaseStatus, StockMovementType } from '@prisma/client';
+import { CreatePurchaseDto, ReceiveItemsDto, CreateSupplierDto } from './dto/purchase.dto';
 
-export interface CreatePurchaseDto {
-  supplierId: string;
-  items: {
-    productId: string;
-    orderedQty: number;
-    unitCost: number;
-  }[];
-  notes?: string;
-}
-
-export interface ReceiveItemsDto {
-  receivedItems: {
-    purchaseItemId: string;
-    receivedQty: number;
-  }[];
-}
+export { CreatePurchaseDto, ReceiveItemsDto, CreateSupplierDto };
 
 @Injectable()
 export class PurchasesService {

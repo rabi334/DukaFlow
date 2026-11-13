@@ -1,21 +1,9 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { PaymentMethod, StockMovementType, SaleStatus } from '@prisma/client';
+import { CartItemDto, CheckoutDto } from './dto/checkout.dto';
 
-export interface CartItemDto {
-  productId: string;
-  quantity: number;
-  unitPrice?: number;
-  discountAmount?: number;
-}
-
-export interface CheckoutDto {
-  items: CartItemDto[];
-  paymentMethod: PaymentMethod;
-  amountPaid: number;
-  paymentReference?: string;
-  notes?: string;
-}
+export { CartItemDto, CheckoutDto };
 
 @Injectable()
 export class SalesService {

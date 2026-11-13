@@ -1,13 +1,9 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { StockMovementType } from '@prisma/client';
+import { StockAdjustmentDto } from './dto/stock-adjustment.dto';
 
-export interface StockAdjustmentDto {
-  productId: string;
-  adjustmentQty: number; // positive to add, negative to reduce
-  reason: string;
-  type?: StockMovementType;
-}
+export { StockAdjustmentDto };
 
 @Injectable()
 export class InventoryService {

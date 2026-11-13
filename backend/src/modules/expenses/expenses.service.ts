@@ -1,14 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { PaymentMethod } from '@prisma/client';
+import { CreateExpenseDto } from './dto/create-expense.dto';
 
-export interface CreateExpenseDto {
-  category: string;
-  amount: number;
-  description?: string;
-  paymentMethod?: PaymentMethod;
-  date?: string;
-}
+export { CreateExpenseDto };
 
 @Injectable()
 export class ExpensesService {

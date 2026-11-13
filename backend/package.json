@@ -13,8 +13,10 @@
     "prisma:push": "prisma db push",
     "prisma:studio": "prisma studio",
     "seed": "ts-node prisma/seed.ts",
-    "test": "jest",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test": "jest --passWithNoTests",
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:security": "ts-node test/run-phase1-tests.ts",
+    "test:verify": "ts-node test/system-verify.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.3.0",

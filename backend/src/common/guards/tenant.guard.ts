@@ -1,5 +1,12 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from '../../modules/prisma/prisma.service';
+import { MemberStatus } from '@prisma/client';
 
 @Injectable()
 export class TenantGuard implements CanActivate {
@@ -10,7 +17,7 @@ export class TenantGuard implements CanActivate {
     const user = request.user;
 
     if (!user) {
-      throw new ForbiddenException('User session not established');
+      throw new UnauthorizedException('User session not established');
     }
 
     // Resolve target Organization/Workspace:
@@ -20,12 +27,17 @@ export class TenantGuard implements CanActivate {
     if (!orgId) {
       // Find default active organization for this user
       const defaultMembership = await this.prisma.member.findFirst({
-        where: { userId: user.id },
+        where: {
+          userId: user.id,
+          status: MemberStatus.ACTIVE,
+        },
         include: { organization: true },
       });
 
       if (!defaultMembership) {
-        throw new ForbiddenException('User does not belong to any business organization');
+        throw new ForbiddenException(
+          'User does not belong to any active business workspace. Please onboard or request an invitation.',
+        );
       }
 
       request.organization = defaultMembership.organization;
@@ -33,7 +45,7 @@ export class TenantGuard implements CanActivate {
       return true;
     }
 
-    // Verify user belongs to the requested organization
+    // Verify user belongs to the requested organization and is ACTIVE
     const membership = await this.prisma.member.findUnique({
       where: {
         userId_organizationId: {
@@ -47,7 +59,15 @@ export class TenantGuard implements CanActivate {
     });
 
     if (!membership) {
-      throw new ForbiddenException('Access denied: You do not have permission for this business workspace');
+      throw new ForbiddenException(
+        'Access denied: You do not have permission or membership in this business workspace',
+      );
+    }
+
+    if (membership.status !== MemberStatus.ACTIVE) {
+      throw new ForbiddenException(
+        'Access denied: Your membership in this business is deactivated or pending invitation',
+      );
     }
 
     request.organization = membership.organization;

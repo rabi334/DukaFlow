@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
-import { PurchasesService, CreatePurchaseDto, ReceiveItemsDto } from './purchases.service';
+import { PurchasesService, CreatePurchaseDto, ReceiveItemsDto, CreateSupplierDto } from './purchases.service';
 import { AuthGuard } from '../../common/guards/auth.guard';
 import { TenantGuard } from '../../common/guards/tenant.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -19,7 +19,7 @@ export class PurchasesController {
 
   @Post('suppliers')
   @Roles('owner', 'manager')
-  async createSupplier(@CurrentTenant() org: any, @Body() data: any) {
+  async createSupplier(@CurrentTenant() org: any, @Body() data: CreateSupplierDto) {
     return this.purchasesService.createSupplier(org.id, data);
   }
 

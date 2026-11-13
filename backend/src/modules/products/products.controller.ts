@@ -10,6 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ProductsService, CreateProductDto, UpdateProductDto } from './products.service';
+import { CreateCategoryDto } from './dto/create-product.dto';
 import { AuthGuard } from '../../common/guards/auth.guard';
 import { TenantGuard } from '../../common/guards/tenant.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -53,7 +54,7 @@ export class ProductsController {
   @Roles('owner', 'manager', 'inventory_staff')
   async createCategory(
     @CurrentTenant() org: any,
-    @Body() body: { name: string; description?: string },
+    @Body() body: CreateCategoryDto,
   ) {
     return this.productsService.createCategory(org.id, body.name, body.description);
   }

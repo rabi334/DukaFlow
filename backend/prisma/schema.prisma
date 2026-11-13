@@ -77,12 +77,19 @@ model Verification {
   @@map("verification")
 }
 
+enum MemberStatus {
+  ACTIVE
+  INVITED
+  DEACTIVATED
+}
+
 // Organization represents a Business Workspace in DukaFlow
 model Organization {
   id             String    @id @default(uuid())
   name           String
   slug           String?   @unique
   logo           String?
+  metadata       String?
   currency       String    @default("ETB")
   businessType   String?   @default("Retail") @map("business_type")
   address        String?
@@ -117,12 +124,14 @@ model Member {
   organizationId String       @map("organization_id")
   userId         String       @map("user_id")
   role           String       @default("cashier") // owner, manager, cashier, inventory_staff, admin
+  status         MemberStatus @default(ACTIVE)
   createdAt      DateTime     @default(now()) @map("created_at")
 
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, organizationId])
+  @@index([organizationId, status])
   @@map("member")
 }
 
@@ -134,6 +143,7 @@ model Invitation {
   status         String       @default("pending")
   expiresAt      DateTime     @map("expires_at")
   inviterId      String       @map("inviter_id")
+  createdAt      DateTime     @default(now()) @map("created_at")
 
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   user           User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)

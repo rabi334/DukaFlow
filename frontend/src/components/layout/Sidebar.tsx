@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Store,
   LayoutDashboard,
@@ -13,7 +13,10 @@ import {
   Settings,
   X,
   CreditCard,
+  LogOut,
+  Building,
 } from 'lucide-react';
+import { api } from '@/lib/api';
 
 interface SidebarProps {
   mobileOpen: boolean;
@@ -32,6 +35,73 @@ const navItems = [
 
 export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const [userName, setUserName] = useState('User');
+  const [userRole, setUserRole] = useState('Staff');
+  const [shopName, setShopName] = useState('My Shop');
+  const [shopCity, setShopCity] = useState('Addis Ababa');
+
+  useEffect(() => {
+    // 1. Initial state from local storage
+    if (typeof window !== 'undefined') {
+      const storedName = localStorage.getItem('dukaflow_user_name');
+      const storedShop = localStorage.getItem('dukaflow_active_org_name');
+      if (storedName) setUserName(storedName);
+      if (storedShop) setShopName(storedShop);
+    }
+
+    // 2. Fetch authenticated profile
+    api
+      .get('/api/v1/auth/me')
+      .then((res) => {
+        const { user, workspaces } = res.data;
+        if (user?.name) {
+          setUserName(user.name);
+          localStorage.setItem('dukaflow_user_name', user.name);
+        }
+
+        const activeOrgId = localStorage.getItem('dukaflow_active_org_id');
+        const activeWs =
+          workspaces?.find((w: any) => w.id === activeOrgId) || workspaces?.[0];
+
+        if (activeWs) {
+          setShopName(activeWs.name);
+          setShopCity(activeWs.city || 'Addis Ababa');
+          setUserRole(activeWs.role || 'Member');
+          localStorage.setItem('dukaflow_active_org_id', activeWs.id);
+          localStorage.setItem('dukaflow_active_org_name', activeWs.name);
+        }
+      })
+      .catch(() => {
+        // Interceptor handles 401 redirect
+      });
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await api.post('/api/v1/auth/logout');
+    } catch {
+      // Proceed even if network logout fails
+    } finally {
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('dukaflow_session_token');
+        localStorage.removeItem('dukaflow_session_token');
+        localStorage.removeItem('dukaflow_user_email');
+        localStorage.removeItem('dukaflow_user_name');
+        localStorage.removeItem('dukaflow_active_org_id');
+        localStorage.removeItem('dukaflow_active_org_name');
+      }
+      router.push('/login');
+    }
+  };
+
+  const userInitials = userName
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((n) => n[0].toUpperCase())
+    .join('') || 'DF';
 
   return (
     <>
@@ -68,6 +138,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
           <button
             onClick={() => setMobileOpen(false)}
             className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden"
+            aria-label="Close menu"
           >
             <X className="w-5 h-5" />
           </button>
@@ -76,16 +147,19 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
         {/* Active Workspace Pill */}
         <div className="p-4 mx-4 my-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800">
           <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-medium mb-1">
-            <span>ACTIVE SHOP</span>
+            <span className="flex items-center gap-1">
+              <Building className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span>ACTIVE SHOP</span>
+            </span>
             <span className="px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 font-semibold text-[10px]">
               ETB
             </span>
           </div>
           <p className="font-semibold text-sm text-slate-800 dark:text-slate-200 truncate">
-            Addis Supermarket
+            {shopName}
           </p>
           <p className="text-xs text-slate-400 dark:text-slate-500 truncate">
-            Bole Road • Mega Building
+            {shopCity}
           </p>
         </div>
 
@@ -127,28 +201,41 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
                     : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200'
                 }`}
               >
-                <Icon className={`w-5 h-5 flex-shrink-0 ${active ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`} />
+                <Icon
+                  className={`w-5 h-5 flex-shrink-0 ${
+                    active ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'
+                  }`}
+                />
                 <span>{item.label}</span>
               </Link>
             );
           })}
         </nav>
 
-        {/* User Card & Role */}
-        <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 font-bold flex items-center justify-center text-sm">
-              AB
+        {/* User Card, Role & Logout Button */}
+        <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 font-bold flex items-center justify-center text-sm flex-shrink-0">
+              {userInitials}
             </div>
-            <div>
-              <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                Abebe Bikila
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
+                {userName}
               </p>
-              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium capitalize">
-                Shop Owner
+              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium capitalize truncate">
+                {userRole}
               </p>
             </div>
           </div>
+
+          <button
+            onClick={handleLogout}
+            title="Sign out"
+            className="p-2 rounded-xl text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors flex-shrink-0"
+            aria-label="Logout"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
         </div>
       </aside>
     </>

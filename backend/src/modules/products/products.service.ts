@@ -1,31 +1,9 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { StockMovementType } from '@prisma/client';
+import { CreateProductDto, UpdateProductDto } from './dto/create-product.dto';
 
-export interface CreateProductDto {
-  name: string;
-  sku: string;
-  barcode?: string;
-  categoryId?: string;
-  description?: string;
-  unit?: string;
-  costPrice: number;
-  sellingPrice: number;
-  minStockThreshold?: number;
-  initialStock?: number;
-}
-
-export interface UpdateProductDto {
-  name?: string;
-  sku?: string;
-  barcode?: string;
-  categoryId?: string;
-  description?: string;
-  unit?: string;
-  costPrice?: number;
-  sellingPrice?: number;
-  minStockThreshold?: number;
-}
+export { CreateProductDto, UpdateProductDto };
 
 @Injectable()
 export class ProductsService {
