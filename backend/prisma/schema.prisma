@@ -102,6 +102,7 @@ model Organization {
   receiptHeader  String?   @map("receipt_header")
   receiptFooter  String?   @map("receipt_footer")
   allowNegative  Boolean   @default(false) @map("allow_negative")
+  timezone       String    @default("Africa/Addis_Ababa")
   createdAt      DateTime  @default(now()) @map("created_at")
   updatedAt      DateTime  @updatedAt @map("updated_at")
 
@@ -408,26 +409,39 @@ model Expense {
   @@map("expenses")
 }
 
-model SaleReturn {
-  id             String           @id @default(uuid())
-  organizationId String           @map("organization_id")
-  saleId         String           @map("sale_id")
-  returnNumber   String           @map("return_number")
-  cashierUserId  String?          @map("cashier_user_id")
-  refundAmount   Decimal          @db.Decimal(12, 2) @map("refund_amount")
-  refundMethod   PaymentMethod    @default(CASH) @map("refund_method")
-  reason         String?
-  restocked      Boolean          @default(true)
-  createdAt      DateTime         @default(now()) @map("created_at")
+enum ReturnStatus {
+  COMPLETED
+  PENDING
+  FAILED
+}
 
-  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  sale           Sale             @relation(fields: [saleId], references: [id], onDelete: Cascade)
-  cashier        User?            @relation("ReturnCashier", fields: [cashierUserId], references: [id], onDelete: SetNull)
-  items          SaleReturnItem[]
+model SaleReturn {
+  id                      String           @id @default(uuid())
+  organizationId          String           @map("organization_id")
+  saleId                  String           @map("sale_id")
+  returnNumber            String           @map("return_number")
+  cashierUserId           String?          @map("cashier_user_id")
+  returnCredit            Decimal          @default(0) @db.Decimal(12, 2) @map("return_credit")
+  refundDisbursed         Decimal          @default(0) @db.Decimal(12, 2) @map("refund_disbursed")
+  unpaidCancelled         Decimal          @default(0) @db.Decimal(12, 2) @map("unpaid_cancelled")
+  customerCreditDisbursed Decimal          @default(0) @db.Decimal(12, 2) @map("customer_credit_disbursed")
+  refundAmount            Decimal          @db.Decimal(12, 2) @map("refund_amount")
+  refundMethod            PaymentMethod    @default(CASH) @map("refund_method")
+  status                  ReturnStatus     @default(COMPLETED)
+  reason                  String?
+  restocked               Boolean          @default(true)
+  createdAt               DateTime         @default(now()) @map("created_at")
+  completedAt             DateTime?        @map("completed_at")
+
+  organization    Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  sale            Sale             @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  cashier         User?            @relation("ReturnCashier", fields: [cashierUserId], references: [id], onDelete: SetNull)
+  items           SaleReturnItem[]
 
   @@unique([organizationId, returnNumber])
   @@index([organizationId, saleId])
   @@index([organizationId, createdAt])
+  @@index([organizationId, status])
   @@map("sale_returns")
 }
 

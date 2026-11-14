@@ -143,4 +143,31 @@ export class SalesController {
 
     return this.salesService.processReturn(org.id, user.id, id, dto);
   }
+
+  @Post('returns/:returnId/complete')
+  @Roles('owner', 'manager', 'cashier')
+  @RequirePermissions(AppPermission.POS_CHECKOUT)
+  async completeReturn(
+    @CurrentTenant() org: any,
+    @CurrentUser() user: any,
+    @CurrentMembership() membership: any,
+    @Param('returnId') returnId: string,
+  ) {
+    const role = normalizeRole(membership.role);
+    if (role === AppRole.INVENTORY_STAFF) {
+      throw new ForbiddenException('Access denied: Inventory staff cannot complete returns');
+    }
+    return this.salesService.completeReturn(org.id, user.id, returnId);
+  }
+
+  @Post('returns/:returnId/fail')
+  @Roles('owner', 'manager')
+  async failReturn(
+    @CurrentTenant() org: any,
+    @CurrentUser() user: any,
+    @Param('returnId') returnId: string,
+    @Body('reason') reason?: string,
+  ) {
+    return this.salesService.failReturn(org.id, user.id, returnId, reason);
+  }
 }

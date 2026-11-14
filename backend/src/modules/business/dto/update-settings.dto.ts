@@ -50,4 +50,8 @@ export class UpdateSettingsDto {
   @IsBoolean()
   @IsOptional()
   allowNegative?: boolean;
+
+  @IsString()
+  @IsOptional()
+  timezone?: string;
 }

@@ -5,11 +5,27 @@ import { UpdateSettingsDto } from './dto/update-settings.dto';
 import { MemberStatus } from '@prisma/client';
 import { normalizeRole, AppRole } from '../../common/auth/permissions';
 
+export function isValidIanaTimezone(timeZone: string): boolean {
+  if (!timeZone || typeof timeZone !== 'string') return false;
+  try {
+    Intl.DateTimeFormat(undefined, { timeZone });
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 @Injectable()
 export class BusinessService {
   constructor(private readonly prisma: PrismaService) {}
 
   async onboardBusiness(userId: string, dto: OnboardBusinessDto) {
+    if (dto.timezone && !isValidIanaTimezone(dto.timezone.trim())) {
+      throw new BadRequestException(
+        `Invalid IANA timezone: "${dto.timezone}". Example valid timezones: "Africa/Addis_Ababa", "America/New_York", "UTC".`,
+      );
+    }
+
     // Generate clean base slug from name
     const cleanName = dto.name.trim();
     const baseSlug = cleanName
@@ -44,6 +60,7 @@ export class BusinessService {
           taxRate: 0.15,
           taxInclusive: true,
           allowNegative: false,
+          timezone: dto.timezone?.trim() || 'Africa/Addis_Ababa',
         },
       });
 
@@ -102,6 +119,14 @@ export class BusinessService {
   }
 
   async updateSettings(organizationId: string, dto: UpdateSettingsDto) {
+    if (dto.timezone !== undefined) {
+      if (!isValidIanaTimezone(dto.timezone.trim())) {
+        throw new BadRequestException(
+          `Invalid IANA timezone: "${dto.timezone}". Example valid timezones: "Africa/Addis_Ababa", "America/New_York", "UTC".`,
+        );
+      }
+    }
+
     return this.prisma.organization.update({
       where: { id: organizationId },
       data: {
@@ -117,6 +142,7 @@ export class BusinessService {
         receiptHeader: dto.receiptHeader,
         receiptFooter: dto.receiptFooter,
         allowNegative: dto.allowNegative !== undefined ? dto.allowNegative : undefined,
+        timezone: dto.timezone !== undefined ? dto.timezone.trim() : undefined,
       },
     });
   }
@@ -287,17 +313,26 @@ export class BusinessService {
   }
 
   async cancelInvitation(organizationId: string, invitationId: string) {
-    const invitation = await this.prisma.invitation.findFirst({
-      where: { id: invitationId, organizationId },
-    });
+    return this.prisma.$transaction(async (tx) => {
+      const locked: any[] = await tx.$queryRaw`
+        SELECT id, status
+        FROM invitation
+        WHERE id = ${invitationId} AND organization_id = ${organizationId}
+        FOR UPDATE
+      `;
 
-    if (!invitation) {
-      throw new NotFoundException('Invitation not found');
-    }
+      if (!locked || locked.length === 0) {
+        throw new NotFoundException('Invitation not found');
+      }
 
-    return this.prisma.invitation.update({
-      where: { id: invitationId },
-      data: { status: 'cancelled' },
+      if (locked[0].status !== 'pending') {
+        throw new BadRequestException(`Cannot cancel invitation with status: ${locked[0].status}`);
+      }
+
+      return tx.invitation.update({
+        where: { id: invitationId },
+        data: { status: 'cancelled' },
+      });
     });
   }
 
@@ -316,34 +351,52 @@ export class BusinessService {
   }
 
   async acceptInvitation(invitationId: string, userId: string, userEmail: string) {
-    const invitation = await this.prisma.invitation.findUnique({
-      where: { id: invitationId },
-      include: { organization: true },
-    });
-
-    if (!invitation || invitation.status !== 'pending') {
-      throw new NotFoundException('Pending invitation not found');
-    }
-
-    if (new Date() > invitation.expiresAt) {
-      await this.prisma.invitation.update({
-        where: { id: invitationId },
-        data: { status: 'expired' },
-      });
-      throw new BadRequestException('This invitation has expired');
-    }
-
-    if (invitation.email.toLowerCase() !== userEmail.toLowerCase()) {
-      throw new ForbiddenException('This invitation was sent to a different email address');
-    }
-
     return this.prisma.$transaction(async (tx) => {
-      // Check if user is already a member
+      // 1. Acquire PostgreSQL exclusive row-level lock on the invitation
+      // Serializes concurrent acceptance or revocation requests
+      const locked: any[] = await tx.$queryRaw`
+        SELECT id, organization_id, email, role, status, expires_at
+        FROM invitation
+        WHERE id = ${invitationId}
+        FOR UPDATE
+      `;
+
+      if (!locked || locked.length === 0) {
+        throw new NotFoundException('Pending invitation not found');
+      }
+
+      const inv = locked[0];
+
+      if (inv.status !== 'pending') {
+        throw new BadRequestException('This invitation is no longer pending or has already been accepted');
+      }
+
+      if (new Date() > new Date(inv.expires_at)) {
+        await tx.invitation.update({
+          where: { id: invitationId },
+          data: { status: 'expired' },
+        });
+        throw new BadRequestException('This invitation has expired');
+      }
+
+      if (inv.email.toLowerCase() !== userEmail.toLowerCase()) {
+        throw new ForbiddenException('This invitation was sent to a different email address');
+      }
+
+      const org = await tx.organization.findUnique({
+        where: { id: inv.organization_id },
+      });
+
+      if (!org) {
+        throw new NotFoundException('Business workspace not found');
+      }
+
+      // 2. Check if user is already a member
       const existing = await tx.member.findUnique({
         where: {
           userId_organizationId: {
             userId,
-            organizationId: invitation.organizationId,
+            organizationId: inv.organization_id,
           },
         },
       });
@@ -354,29 +407,30 @@ export class BusinessService {
           where: { id: existing.id },
           data: {
             status: MemberStatus.ACTIVE,
-            role: invitation.role || 'cashier',
+            role: inv.role || 'cashier',
           },
         });
       } else {
         membership = await tx.member.create({
           data: {
-            organizationId: invitation.organizationId,
+            organizationId: inv.organization_id,
             userId,
-            role: invitation.role || 'cashier',
+            role: inv.role || 'cashier',
             status: MemberStatus.ACTIVE,
           },
         });
       }
 
+      // 3. Atomically mark invitation accepted
       await tx.invitation.update({
         where: { id: invitationId },
         data: { status: 'accepted' },
       });
 
       return {
-        message: `Successfully joined ${invitation.organization.name}`,
+        message: `Successfully joined ${org.name}`,
         membership,
-        organization: invitation.organization,
+        organization: org,
       };
     });
   }

@@ -11,7 +11,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { PaymentMethod } from '@prisma/client';
+import { PaymentMethod, ReturnStatus } from '@prisma/client';
 
 export class ReturnItemDto {
   @IsString()
@@ -41,4 +41,8 @@ export class ProcessReturnDto {
   @IsBoolean()
   @IsOptional()
   restockInventory?: boolean;
+
+  @IsEnum(ReturnStatus)
+  @IsOptional()
+  status?: ReturnStatus;
 }

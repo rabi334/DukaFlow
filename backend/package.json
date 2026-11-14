@@ -18,6 +18,10 @@
     "test:security": "ts-node test/run-phase1-tests.ts",
     "test:rbac": "ts-node test/run-phase2-tests.ts",
     "test:audit": "ts-node test/independent-phase2-audit.ts",
+    "test:phase3": "ts-node test/run-phase3-tests.ts",
+    "test:concurrency": "ts-node test/run-concurrency-tests.ts",
+    "test:vat-timezone": "ts-node test/run-vat-and-timezone-tests.ts",
+    "test:final-audit": "ts-node test/run-final-audit-tests.ts",
     "test:verify": "ts-node test/system-verify.ts"
   },
   "dependencies": {

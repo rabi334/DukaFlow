@@ -275,25 +275,7 @@ export class PurchasesService {
   }
 
   async receiveStock(organizationId: string, userId: string, purchaseId: string, dto: ReceiveItemsDto) {
-    const purchase = await this.prisma.purchase.findFirst({
-      where: { id: purchaseId, organizationId },
-      include: { items: true },
-    });
-
-    if (!purchase) {
-      throw new NotFoundException('Purchase order not found');
-    }
-
-    // Prevent receiving against cancelled or already completed purchases
-    if (purchase.status === PurchaseStatus.RECEIVED) {
-      throw new BadRequestException('This purchase order has already been fully received');
-    }
-
-    if (purchase.status === PurchaseStatus.CANCELLED) {
-      throw new BadRequestException('Cannot receive items for a cancelled purchase order');
-    }
-
-    // Prevent duplicate line item entries in the incoming payload
+    // 1. Prevent duplicate line item entries in the incoming payload
     const seenLineIds = new Set<string>();
     for (const item of dto.receivedItems) {
       if (seenLineIds.has(item.purchaseItemId)) {
@@ -304,32 +286,66 @@ export class PurchasesService {
       seenLineIds.add(item.purchaseItemId);
     }
 
-    // Validate quantities before mutating state
-    for (const receiveItem of dto.receivedItems) {
-      const line = purchase.items.find((item) => item.id === receiveItem.purchaseItemId);
-      if (!line) {
-        throw new BadRequestException(
-          `Line item ${receiveItem.purchaseItemId} does not belong to purchase order ${purchase.orderNumber}`,
-        );
-      }
-
-      if (receiveItem.receivedQty <= 0) {
-        throw new BadRequestException('Received quantity must be greater than zero');
-      }
-
-      const currentReceived = Number(line.receivedQty);
-      const ordered = Number(line.orderedQty);
-      const remaining = ordered - currentReceived;
-
-      if (receiveItem.receivedQty > remaining) {
-        throw new BadRequestException(
-          `Cannot receive ${receiveItem.receivedQty} units. Only ${remaining} units remaining for item ${line.productId}`,
-        );
-      }
-    }
-
-    // Atomic transaction: increment inventory ONLY by received quantities & create movement records
+    // 2. Execute entire receiving process inside transaction with row-level locking
     return this.prisma.$transaction(async (tx) => {
+      // Acquire PostgreSQL exclusive row-level lock on the purchase order
+      // Serializes concurrent receiving requests for the same purchase
+      const locked: any[] = await tx.$queryRaw`
+        SELECT id, status, organization_id, order_number
+        FROM purchases
+        WHERE id = ${purchaseId} AND organization_id = ${organizationId}
+        FOR UPDATE
+      `;
+
+      if (!locked || locked.length === 0) {
+        throw new NotFoundException('Purchase order not found');
+      }
+
+      // Re-fetch purchase order with its latest committed items under the lock
+      const purchase = await tx.purchase.findFirst({
+        where: { id: purchaseId, organizationId },
+        include: { items: true },
+      });
+
+      if (!purchase) {
+        throw new NotFoundException('Purchase order not found');
+      }
+
+      // Prevent receiving against cancelled or already completed purchases
+      if (purchase.status === PurchaseStatus.RECEIVED) {
+        throw new BadRequestException('This purchase order has already been fully received');
+      }
+
+      if (purchase.status === PurchaseStatus.CANCELLED) {
+        throw new BadRequestException('Cannot receive items for a cancelled purchase order');
+      }
+
+      // Validate quantities under the lock using latest committed values
+      for (const receiveItem of dto.receivedItems) {
+        const line = purchase.items.find((item) => item.id === receiveItem.purchaseItemId);
+        if (!line) {
+          throw new BadRequestException(
+            `Line item ${receiveItem.purchaseItemId} does not belong to purchase order ${purchase.orderNumber}`,
+          );
+        }
+
+        if (receiveItem.receivedQty <= 0) {
+          throw new BadRequestException('Received quantity must be greater than zero');
+        }
+
+        const currentReceived = new Prisma.Decimal(line.receivedQty);
+        const ordered = new Prisma.Decimal(line.orderedQty);
+        const remaining = ordered.sub(currentReceived);
+        const additionalQty = new Prisma.Decimal(receiveItem.receivedQty);
+
+        if (additionalQty.gt(remaining)) {
+          throw new BadRequestException(
+            `Cannot receive ${receiveItem.receivedQty} units. Only ${remaining} units remaining for item ${line.productId}`,
+          );
+        }
+      }
+
+      // Mutate state atomically: line items, inventory balances, and ledger movements
       for (const receiveItem of dto.receivedItems) {
         const line = purchase.items.find((item) => item.id === receiveItem.purchaseItemId)!;
         const additionalQty = new Prisma.Decimal(receiveItem.receivedQty);
@@ -354,7 +370,7 @@ export class PurchasesService {
           create: { productId: line.productId, quantityOnHand: newBalance },
         });
 
-        // 3. Record incoming stock movement in ledger
+        // 3. Record incoming stock movement in ledger (exactly one per accepted receive)
         await tx.inventoryMovement.create({
           data: {
             organizationId,

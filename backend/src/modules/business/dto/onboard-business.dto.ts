@@ -29,4 +29,8 @@ export class OnboardBusinessDto {
   @IsString()
   @IsOptional()
   currency?: string;
+
+  @IsString()
+  @IsOptional()
+  timezone?: string;
 }
