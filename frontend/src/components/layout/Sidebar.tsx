@@ -26,6 +26,7 @@ interface SidebarProps {
 const navItems = [
   { href: '/pos', label: 'Point of Sale (POS)', icon: CreditCard, highlight: true },
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/sales', label: 'Sales & Returns', icon: Receipt },
   { href: '/products', label: 'Products & Catalog', icon: Package },
   { href: '/inventory', label: 'Inventory & Stock', icon: Boxes },
   { href: '/purchases', label: 'Purchases & Suppliers', icon: Truck },
@@ -46,8 +47,10 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
     // 1. Initial state from local storage
     if (typeof window !== 'undefined') {
       const storedName = localStorage.getItem('dukaflow_user_name');
+      const storedRole = localStorage.getItem('dukaflow_user_role');
       const storedShop = localStorage.getItem('dukaflow_active_org_name');
       if (storedName) setUserName(storedName);
+      if (storedRole) setUserRole(storedRole);
       if (storedShop) setShopName(storedShop);
     }
 
@@ -68,7 +71,9 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
         if (activeWs) {
           setShopName(activeWs.name);
           setShopCity(activeWs.city || 'Addis Ababa');
-          setUserRole(activeWs.role || 'Member');
+          const cleanRole = (activeWs.role || 'Member').toLowerCase();
+          setUserRole(cleanRole);
+          localStorage.setItem('dukaflow_user_role', cleanRole);
           localStorage.setItem('dukaflow_active_org_id', activeWs.id);
           localStorage.setItem('dukaflow_active_org_name', activeWs.name);
         }
@@ -89,6 +94,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
         localStorage.removeItem('dukaflow_session_token');
         localStorage.removeItem('dukaflow_user_email');
         localStorage.removeItem('dukaflow_user_name');
+        localStorage.removeItem('dukaflow_user_role');
         localStorage.removeItem('dukaflow_active_org_id');
         localStorage.removeItem('dukaflow_active_org_name');
       }
@@ -102,6 +108,28 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
     .slice(0, 2)
     .map((n) => n[0].toUpperCase())
     .join('') || 'DF';
+
+  // Role-based navigation filtering
+  const roleNorm = (userRole || '').toLowerCase().trim();
+  const visibleNavItems = navItems.filter((item) => {
+    if (roleNorm === 'owner') return true;
+    if (roleNorm === 'manager') {
+      // Manager has access to all operational modules, settings is owner-only
+      return item.href !== '/settings';
+    }
+    if (roleNorm === 'cashier') {
+      // Cashier sees POS, Dashboard (Shift register), Sales & Returns, and Products (read-only catalog)
+      return item.href === '/pos' || item.href === '/dashboard' || item.href === '/sales' || item.href === '/products';
+    }
+    if (roleNorm === 'inventory_staff' || roleNorm === 'inventory') {
+      // Inventory staff sees Dashboard, Products, Inventory, Purchases (goods receiving)
+      return item.href === '/dashboard' || item.href === '/products' || item.href === '/inventory' || item.href === '/purchases';
+    }
+    if (roleNorm === 'platform_admin' || roleNorm === 'admin') {
+      return item.href === '/dashboard';
+    }
+    return item.href === '/pos' || item.href === '/dashboard';
+  });
 
   return (
     <>
@@ -165,7 +193,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
 
         {/* Navigation Links */}
         <nav className="flex-1 px-4 py-2 space-y-1 overflow-y-auto">
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const Icon = item.icon;
             const active = pathname === item.href;
 

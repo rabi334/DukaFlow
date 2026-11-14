@@ -1,6 +1,8 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators/roles.decorator';
+import { normalizeRole, AppRole } from '../auth/permissions';
+import { MemberStatus } from '@prisma/client';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -20,15 +22,23 @@ export class RolesGuard implements CanActivate {
     const membership = request.membership;
 
     if (!membership || !membership.role) {
-      throw new ForbiddenException('User membership role could not be verified');
+      throw new ForbiddenException('User membership role could not be verified in this business');
     }
 
-    // Role hierarchy / equivalence (owner has full access to everything)
-    const userRole = membership.role.toLowerCase();
+    if (membership.status !== MemberStatus.ACTIVE) {
+      throw new ForbiddenException('User membership in this business is not active');
+    }
+
+    const userRole = normalizeRole(membership.role);
+    if (!userRole) {
+      throw new ForbiddenException(`Unknown or invalid user role: ${membership.role}`);
+    }
+
+    // Check if the user's normalized role matches one of the required roles
     const hasRole = requiredRoles.some((role) => {
-      const targetRole = role.toLowerCase();
-      if (userRole === 'owner') return true; // Owner has all permissions
-      if (userRole === 'admin') return true; // Admin has all permissions
+      const targetRole = normalizeRole(role);
+      // Owner has full operational and administrative access within their business
+      if (userRole === AppRole.OWNER) return true;
       return userRole === targetRole;
     });
 

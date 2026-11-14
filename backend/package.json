@@ -16,6 +16,8 @@
     "test": "jest --passWithNoTests",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "test:security": "ts-node test/run-phase1-tests.ts",
+    "test:rbac": "ts-node test/run-phase2-tests.ts",
+    "test:audit": "ts-node test/independent-phase2-audit.ts",
     "test:verify": "ts-node test/system-verify.ts"
   },
   "dependencies": {

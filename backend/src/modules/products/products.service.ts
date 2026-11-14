@@ -43,11 +43,17 @@ export class ProductsService {
   }
 
   // Products
-  async getProducts(organizationId: string, options?: { search?: string; categoryId?: string; lowStock?: boolean }) {
+  async getProducts(
+    organizationId: string,
+    options?: { search?: string; categoryId?: string; lowStock?: boolean; includeArchived?: boolean },
+  ) {
     const where: any = {
       organizationId,
-      isArchived: false,
     };
+
+    if (!options?.includeArchived) {
+      where.isArchived = false;
+    }
 
     if (options?.categoryId) {
       where.categoryId = options.categoryId;
@@ -123,14 +129,24 @@ export class ProductsService {
 
   async createProduct(organizationId: string, userId: string, dto: CreateProductDto) {
     // Check SKU uniqueness within organization
-    const existing = await this.prisma.product.findUnique({
+    const existingSku = await this.prisma.product.findUnique({
       where: {
         organizationId_sku: { organizationId, sku: dto.sku },
       },
     });
 
-    if (existing) {
+    if (existingSku) {
       throw new BadRequestException(`Product with SKU "${dto.sku}" already exists in this workspace`);
+    }
+
+    // Check Barcode uniqueness within organization if provided
+    if (dto.barcode && dto.barcode.trim()) {
+      const existingBarcode = await this.prisma.product.findFirst({
+        where: { organizationId, barcode: dto.barcode.trim() },
+      });
+      if (existingBarcode) {
+        throw new BadRequestException(`Product with barcode "${dto.barcode}" already exists in this workspace`);
+      }
     }
 
     // Atomic transaction: create product, inventory balance, and opening stock movement
@@ -141,7 +157,7 @@ export class ProductsService {
           categoryId: dto.categoryId,
           name: dto.name,
           sku: dto.sku,
-          barcode: dto.barcode,
+          barcode: dto.barcode ? dto.barcode.trim() : null,
           description: dto.description,
           unit: dto.unit || 'pcs',
           costPrice: dto.costPrice,
@@ -180,14 +196,42 @@ export class ProductsService {
   }
 
   async updateProduct(organizationId: string, id: string, dto: UpdateProductDto) {
-    await this.getProductById(organizationId, id);
+    const current = await this.getProductById(organizationId, id);
+
+    // Validate SKU uniqueness if SKU is being changed
+    if (dto.sku && dto.sku !== current.sku) {
+      const existingSku = await this.prisma.product.findFirst({
+        where: {
+          organizationId,
+          sku: dto.sku,
+          id: { not: id },
+        },
+      });
+      if (existingSku) {
+        throw new BadRequestException(`Product with SKU "${dto.sku}" already exists in this workspace`);
+      }
+    }
+
+    // Validate Barcode uniqueness if Barcode is being changed
+    if (dto.barcode && dto.barcode.trim() && dto.barcode.trim() !== current.barcode) {
+      const existingBarcode = await this.prisma.product.findFirst({
+        where: {
+          organizationId,
+          barcode: dto.barcode.trim(),
+          id: { not: id },
+        },
+      });
+      if (existingBarcode) {
+        throw new BadRequestException(`Product with barcode "${dto.barcode}" already exists in this workspace`);
+      }
+    }
 
     return this.prisma.product.update({
       where: { id },
       data: {
         name: dto.name,
         sku: dto.sku,
-        barcode: dto.barcode,
+        barcode: dto.barcode !== undefined ? (dto.barcode ? dto.barcode.trim() : null) : undefined,
         categoryId: dto.categoryId,
         description: dto.description,
         unit: dto.unit,
@@ -208,6 +252,56 @@ export class ProductsService {
     return this.prisma.product.update({
       where: { id },
       data: { isArchived: true },
+      include: { category: true, inventory: true },
     });
+  }
+
+  async restoreProduct(organizationId: string, id: string) {
+    const product = await this.prisma.product.findFirst({
+      where: { id, organizationId },
+    });
+
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    return this.prisma.product.update({
+      where: { id },
+      data: { isArchived: false },
+      include: { category: true, inventory: true },
+    });
+  }
+
+  async deleteProduct(organizationId: string, id: string) {
+    const product = await this.prisma.product.findFirst({
+      where: { id, organizationId },
+      include: {
+        _count: {
+          select: {
+            saleItems: true,
+            purchaseItems: true,
+            movements: true,
+            returnItems: true,
+          },
+        },
+      },
+    });
+
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    if (
+      product._count.saleItems > 0 ||
+      product._count.purchaseItems > 0 ||
+      product._count.movements > 0 ||
+      product._count.returnItems > 0
+    ) {
+      throw new BadRequestException(
+        'Cannot permanently delete product with historical sales, purchases, or inventory movements. Archive the product instead.',
+      );
+    }
+
+    return this.prisma.product.delete({ where: { id } });
   }
 }

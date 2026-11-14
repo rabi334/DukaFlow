@@ -14,12 +14,15 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import { api, formatETB } from '@/lib/api';
+import { AccessDenied } from '@/components/common/AccessDenied';
 
 export default function InventoryPage() {
   const [inventory, setInventory] = useState<any[]>([]);
   const [movements, setMovements] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'levels' | 'movements'>('levels');
   const [loading, setLoading] = useState(true);
+  const [forbidden, setForbidden] = useState(false);
+  const [userRole, setUserRole] = useState('Staff');
   const [searchQuery, setSearchQuery] = useState('');
   const [lowStockFilter, setLowStockFilter] = useState(false);
 
@@ -33,6 +36,16 @@ export default function InventoryPage() {
 
   const loadData = async () => {
     setLoading(true);
+    setForbidden(false);
+    const role = (localStorage.getItem('dukaflow_user_role') || 'Staff').toLowerCase();
+    setUserRole(role);
+
+    if (role === 'cashier') {
+      setForbidden(true);
+      setLoading(false);
+      return;
+    }
+
     try {
       const [invRes, movRes] = await Promise.all([
         api.get('/api/v1/inventory'),
@@ -40,8 +53,12 @@ export default function InventoryPage() {
       ]);
       setInventory(invRes.data);
       setMovements(movRes.data);
-    } catch (err) {
-      console.error('Failed to load inventory data:', err);
+    } catch (err: any) {
+      if (err?.response?.status === 403) {
+        setForbidden(true);
+      } else {
+        console.error('Failed to load inventory data:', err);
+      }
     } finally {
       setLoading(false);
     }
@@ -103,6 +120,16 @@ export default function InventoryPage() {
       setSubmitting(false);
     }
   };
+
+  if (forbidden) {
+    return (
+      <AccessDenied
+        role={userRole}
+        resourceName="Inventory & Stock Ledger"
+        requiredRole="Owner, Manager, or Inventory Staff"
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">

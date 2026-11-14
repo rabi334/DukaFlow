@@ -82,4 +82,38 @@ export class CreateSupplierDto {
   @IsString()
   @IsOptional()
   tinNumber?: string;
+
+  @IsString()
+  @IsOptional()
+  notes?: string;
+}
+
+export class UpdateSupplierDto {
+  @IsString()
+  @IsOptional()
+  name?: string;
+
+  @IsString()
+  @IsOptional()
+  contactName?: string;
+
+  @IsString()
+  @IsOptional()
+  phoneNumber?: string;
+
+  @IsString()
+  @IsOptional()
+  email?: string;
+
+  @IsString()
+  @IsOptional()
+  address?: string;
+
+  @IsString()
+  @IsOptional()
+  tinNumber?: string;
+
+  @IsString()
+  @IsOptional()
+  notes?: string;
 }

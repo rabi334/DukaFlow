@@ -12,11 +12,14 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { api, formatETB } from '@/lib/api';
+import { AccessDenied } from '@/components/common/AccessDenied';
 
 export default function ExpensesPage() {
   const [expenses, setExpenses] = useState<any[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [forbidden, setForbidden] = useState(false);
+  const [userRole, setUserRole] = useState('Staff');
   const [selectedCat, setSelectedCat] = useState('all');
 
   // Modal
@@ -32,6 +35,16 @@ export default function ExpensesPage() {
 
   const loadData = async () => {
     setLoading(true);
+    setForbidden(false);
+    const role = (localStorage.getItem('dukaflow_user_role') || 'Staff').toLowerCase();
+    setUserRole(role);
+
+    if (role === 'cashier' || role === 'inventory_staff') {
+      setForbidden(true);
+      setLoading(false);
+      return;
+    }
+
     try {
       const [eRes, cRes] = await Promise.all([
         api.get('/api/v1/expenses'),
@@ -39,8 +52,12 @@ export default function ExpensesPage() {
       ]);
       setExpenses(eRes.data);
       setCategories(cRes.data);
-    } catch (err) {
-      console.error('Failed to load expenses:', err);
+    } catch (err: any) {
+      if (err?.response?.status === 403) {
+        setForbidden(true);
+      } else {
+        console.error('Failed to load expenses:', err);
+      }
     } finally {
       setLoading(false);
     }
@@ -85,6 +102,16 @@ export default function ExpensesPage() {
       setSubmitting(false);
     }
   };
+
+  if (forbidden) {
+    return (
+      <AccessDenied
+        role={userRole}
+        resourceName="Operating Expenses"
+        requiredRole="Owner or Manager"
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">

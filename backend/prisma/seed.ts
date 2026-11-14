@@ -1,14 +1,20 @@
-import { PrismaClient, StockMovementType, PaymentMethod, SaleStatus } from '@prisma/client';
+import { PrismaClient, StockMovementType, PaymentMethod, SaleStatus, MemberStatus } from '@prisma/client';
+import { hashPassword } from 'better-auth/crypto';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('--- Seeding DukaFlow database ---');
 
+  // Compute Better Auth cryptographic password hash for password123
+  const hashedPassword = await hashPassword('password123');
+
   // 1. Create Demo Owner User
   const ownerUser = await prisma.user.upsert({
     where: { email: 'owner@dukaflow.et' },
-    update: {},
+    update: {
+      name: 'Abebe Bikila',
+    },
     create: {
       name: 'Abebe Bikila',
       email: 'owner@dukaflow.et',
@@ -17,28 +23,53 @@ async function main() {
     },
   });
 
-  // Create an account with password (Better Auth format or hash)
+  // Create an account with Better Auth hashed password for Owner
   await prisma.account.upsert({
     where: { id: 'seed-owner-account' },
-    update: {},
+    update: {
+      password: hashedPassword,
+      userId: ownerUser.id,
+      providerId: 'credential',
+      accountId: ownerUser.id,
+    },
     create: {
       id: 'seed-owner-account',
       userId: ownerUser.id,
       providerId: 'credential',
-      accountId: ownerUser.email,
-      password: 'password123', // In demo seed
+      accountId: ownerUser.id,
+      password: hashedPassword,
     },
   });
 
   // 2. Create Demo Cashier User
   const cashierUser = await prisma.user.upsert({
     where: { email: 'cashier@dukaflow.et' },
-    update: {},
+    update: {
+      name: 'Tigist Assefa',
+    },
     create: {
       name: 'Tigist Assefa',
       email: 'cashier@dukaflow.et',
       emailVerified: true,
       image: null,
+    },
+  });
+
+  // Create an account with Better Auth hashed password for Cashier
+  await prisma.account.upsert({
+    where: { id: 'seed-cashier-account' },
+    update: {
+      password: hashedPassword,
+      userId: cashierUser.id,
+      providerId: 'credential',
+      accountId: cashierUser.id,
+    },
+    create: {
+      id: 'seed-cashier-account',
+      userId: cashierUser.id,
+      providerId: 'credential',
+      accountId: cashierUser.id,
+      password: hashedPassword,
     },
   });
 
@@ -71,11 +102,15 @@ async function main() {
         organizationId: org.id,
       },
     },
-    update: {},
+    update: {
+      status: MemberStatus.ACTIVE,
+      role: 'owner',
+    },
     create: {
       userId: ownerUser.id,
       organizationId: org.id,
       role: 'owner',
+      status: MemberStatus.ACTIVE,
     },
   });
 
@@ -86,11 +121,15 @@ async function main() {
         organizationId: org.id,
       },
     },
-    update: {},
+    update: {
+      status: MemberStatus.ACTIVE,
+      role: 'cashier',
+    },
     create: {
       userId: cashierUser.id,
       organizationId: org.id,
       role: 'cashier',
+      status: MemberStatus.ACTIVE,
     },
   });
 
