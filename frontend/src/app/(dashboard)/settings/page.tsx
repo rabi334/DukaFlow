@@ -53,7 +53,7 @@ export default function SettingsPage() {
   const loadData = async () => {
     setLoading(true);
     setForbidden(false);
-    const role = (localStorage.getItem('dukaflow_user_role') || 'Staff').toLowerCase();
+    const role = (localStorage.getItem('gatiiflow_user_role') || localStorage.getItem('dukaflow_user_role') || 'Staff').toLowerCase();
     setUserRole(role);
 
     if (role !== 'owner') {
@@ -528,7 +528,7 @@ export default function SettingsPage() {
                 <input
                   type="email"
                   required
-                  placeholder="cashier@dukaflow.et"
+                  placeholder="cashier@gatiiflow.com"
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                   className="w-full mt-1 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"

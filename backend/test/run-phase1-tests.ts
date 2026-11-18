@@ -6,7 +6,7 @@ import { MemberStatus, PaymentMethod } from '@prisma/client';
 
 async function main() {
   console.log('========================================================================');
-  console.log('  DUKAFLOW PHASE 1: AUTHENTICATION & SECURITY VERIFICATION SUITE');
+  console.log('  GATIIFLOW PHASE 1: AUTHENTICATION & SECURITY VERIFICATION SUITE');
   console.log('========================================================================\n');
 
   // 1. Bootstrap NestJS server on dynamic test port
@@ -25,9 +25,9 @@ async function main() {
   const prisma = app.get(PrismaService);
 
   const timestamp = Date.now();
-  const testOwnerEmail = `owner_phase1_${timestamp}@dukaflow.et`;
+  const testOwnerEmail = `owner_phase1_${timestamp}@gatiiflow.com`;
   const testOwnerPassword = 'StrongPassword2026!';
-  const intruderEmail = `intruder_phase1_${timestamp}@dukaflow.et`;
+  const intruderEmail = `intruder_phase1_${timestamp}@gatiiflow.com`;
 
   let testOwnerToken = '';
   let testOwnerUserId = '';
@@ -118,7 +118,7 @@ async function main() {
     // ------------------------------------------------------------------
     await test('3. User Logout revokes session and blocks subsequent requests', async () => {
       // Register a temporary user for logout
-      const tempEmail = `logout_test_${Date.now()}@dukaflow.et`;
+      const tempEmail = `logout_test_${Date.now()}@gatiiflow.com`;
       const regRes = await fetch(`${serverUrl}/api/v1/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -355,7 +355,7 @@ async function main() {
           'x-organization-id': createdBusinessId,
         },
         body: JSON.stringify({
-          name: 'DukaFlow Premium Tea 100g',
+          name: 'GatiiFlow Premium Tea 100g',
           sku: `TEA-${timestamp}`,
           costPrice: 45,
           sellingPrice: 75,

@@ -8,7 +8,7 @@ import { DatePreset } from '../src/modules/reports/dto/report-query.dto';
 
 async function runPhase4Tests() {
   console.log('========================================================================');
-  console.log('  DUKAFLOW PHASE 4: REPORTS & BUSINESS ANALYTICS VERIFICATION SUITE');
+  console.log('  GATIIFLOW PHASE 4: REPORTS & BUSINESS ANALYTICS VERIFICATION SUITE');
   console.log('========================================================================\n');
 
   const app = await NestFactory.create(AppModule, { logger: false });
@@ -37,11 +37,11 @@ async function runPhase4Tests() {
   // --- SEED TEST TENANT & USERS ---
   console.log('--- Setting up test workspace for Phase 4 verification ---');
 
-  const ownerEmail = `owner_p4_${ts}@dukaflow.com`;
-  const managerEmail = `mgr_p4_${ts}@dukaflow.com`;
-  const cashierEmail = `cash_p4_${ts}@dukaflow.com`;
-  const invStaffEmail = `inv_p4_${ts}@dukaflow.com`;
-  const tenantBEmail = `owner_b_${ts}@dukaflow.com`;
+  const ownerEmail = `owner_p4_${ts}@gatiiflow.com`;
+  const managerEmail = `mgr_p4_${ts}@gatiiflow.com`;
+  const cashierEmail = `cash_p4_${ts}@gatiiflow.com`;
+  const invStaffEmail = `inv_p4_${ts}@gatiiflow.com`;
+  const tenantBEmail = `owner_b_${ts}@gatiiflow.com`;
 
   // 1. Register Owner
   const ownerReg = await fetch(`${serverUrl}/api/v1/auth/register`, {

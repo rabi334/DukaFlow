@@ -54,7 +54,7 @@ export default function SalesHistoryPage() {
     setLoading(true);
     setForbidden(false);
 
-    const role = (localStorage.getItem('dukaflow_user_role') || 'cashier').toLowerCase();
+    const role = (localStorage.getItem('gatiiflow_user_role') || localStorage.getItem('dukaflow_user_role') || 'cashier').toLowerCase();
     setUserRole(role);
 
     if (role === 'inventory_staff' || role === 'inventory') {

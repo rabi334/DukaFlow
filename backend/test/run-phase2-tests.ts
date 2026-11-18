@@ -7,7 +7,7 @@ import { AppRole, AppPermission, roleHasPermission, getPermissionsForRole } from
 
 async function main() {
   console.log('========================================================================');
-  console.log('  DUKAFLOW PHASE 2: ROLE-BASED ACCESS CONTROL (RBAC) VERIFICATION SUITE');
+  console.log('  GATIIFLOW PHASE 2: ROLE-BASED ACCESS CONTROL (RBAC) VERIFICATION SUITE');
   console.log('========================================================================\n');
 
   const app = await NestFactory.create(AppModule, { logger: ['error', 'warn'] });
@@ -28,13 +28,13 @@ async function main() {
   const password = 'StrongPassword2026!';
 
   // Users to register and test
-  const ownerEmail = `owner_p2_${timestamp}@dukaflow.et`;
-  const managerEmail = `manager_p2_${timestamp}@dukaflow.et`;
-  const cashier1Email = `cashier1_p2_${timestamp}@dukaflow.et`;
-  const cashier2Email = `cashier2_p2_${timestamp}@dukaflow.et`;
-  const inventoryStaffEmail = `invstaff_p2_${timestamp}@dukaflow.et`;
-  const nonMemberEmail = `outsider_p2_${timestamp}@dukaflow.et`;
-  const platformAdminEmail = `platadmin_p2_${timestamp}@dukaflow.et`;
+  const ownerEmail = `owner_p2_${timestamp}@gatiiflow.com`;
+  const managerEmail = `manager_p2_${timestamp}@gatiiflow.com`;
+  const cashier1Email = `cashier1_p2_${timestamp}@gatiiflow.com`;
+  const cashier2Email = `cashier2_p2_${timestamp}@gatiiflow.com`;
+  const inventoryStaffEmail = `invstaff_p2_${timestamp}@gatiiflow.com`;
+  const nonMemberEmail = `outsider_p2_${timestamp}@gatiiflow.com`;
+  const platformAdminEmail = `platadmin_p2_${timestamp}@gatiiflow.com`;
 
   let ownerToken = '', ownerId = '';
   let managerToken = '', managerId = '', managerMemberId = '';

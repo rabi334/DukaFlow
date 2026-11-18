@@ -76,14 +76,15 @@ export default function ReportsPage() {
 
   // Load user role
   useEffect(() => {
-    let role = (localStorage.getItem('dukaflow_user_role') || 'owner').toLowerCase().trim();
+    let role = (localStorage.getItem('gatiiflow_user_role') || localStorage.getItem('dukaflow_user_role') || 'owner').toLowerCase().trim();
     api.get('/api/v1/auth/me')
       .then((res) => {
-        const activeOrgId = localStorage.getItem('dukaflow_active_org_id');
+        const activeOrgId = localStorage.getItem('gatiiflow_active_org_id') || localStorage.getItem('dukaflow_active_org_id');
         const activeWs = res.data.workspaces?.find((w: any) => w.id === activeOrgId) || res.data.workspaces?.[0];
         if (activeWs?.role) {
           role = activeWs.role.toLowerCase().trim();
           setUserRole(role);
+          localStorage.setItem('gatiiflow_user_role', role);
           localStorage.setItem('dukaflow_user_role', role);
         }
       })

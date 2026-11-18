@@ -1,7 +1,7 @@
 {
-  "name": "dukaflow-backend",
+  "name": "gatiiflow-backend",
   "version": "1.0.0",
-  "description": "DukaFlow Backend API powered by NestJS, Better Auth, and Prisma",
+  "description": "GatiiFlow Backend API powered by NestJS, Better Auth, and Prisma",
   "private": true,
   "scripts": {
     "build": "nest build",

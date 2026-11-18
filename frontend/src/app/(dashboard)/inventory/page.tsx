@@ -37,7 +37,7 @@ export default function InventoryPage() {
   const loadData = async () => {
     setLoading(true);
     setForbidden(false);
-    const role = (localStorage.getItem('dukaflow_user_role') || 'Staff').toLowerCase();
+    const role = (localStorage.getItem('gatiiflow_user_role') || localStorage.getItem('dukaflow_user_role') || 'Staff').toLowerCase();
     setUserRole(role);
 
     if (role === 'cashier') {

@@ -6,7 +6,7 @@ import { PaymentMethod, PurchaseStatus, SaleStatus, StockMovementType, MemberSta
 
 async function runConcurrencyTests() {
   console.log('========================================================================');
-  console.log('  DUKAFLOW PHASE 3: CONCURRENCY & INTEGRATION VERIFICATION SUITE');
+  console.log('  GATIIFLOW PHASE 3: CONCURRENCY & INTEGRATION VERIFICATION SUITE');
   console.log('========================================================================\n');
 
   const app = await NestFactory.create(AppModule, { logger: ['error', 'warn'] });
@@ -64,17 +64,17 @@ async function runConcurrencyTests() {
 
   // 1. Setup workspace & accounts
   console.log('--- Setting up test workspace for concurrency verification ---');
-  const ownerReg = await registerUser('Concurrency Owner', `conc-owner-${ts}@dukaflow.et`);
-  const cashier1Reg = await registerUser('Concurrency Cashier 1', `conc-c1-${ts}@dukaflow.et`);
-  const cashier2Reg = await registerUser('Concurrency Cashier 2', `conc-c2-${ts}@dukaflow.et`);
-  const manager1Reg = await registerUser('Concurrency Manager 1', `conc-m1-${ts}@dukaflow.et`);
-  const manager2Reg = await registerUser('Concurrency Manager 2', `conc-m2-${ts}@dukaflow.et`);
+  const ownerReg = await registerUser('Concurrency Owner', `conc-owner-${ts}@gatiiflow.com`);
+  const cashier1Reg = await registerUser('Concurrency Cashier 1', `conc-c1-${ts}@gatiiflow.com`);
+  const cashier2Reg = await registerUser('Concurrency Cashier 2', `conc-c2-${ts}@gatiiflow.com`);
+  const manager1Reg = await registerUser('Concurrency Manager 1', `conc-m1-${ts}@gatiiflow.com`);
+  const manager2Reg = await registerUser('Concurrency Manager 2', `conc-m2-${ts}@gatiiflow.com`);
 
-  const ownerLogin = await loginUser(`conc-owner-${ts}@dukaflow.et`);
-  const cashier1Login = await loginUser(`conc-c1-${ts}@dukaflow.et`);
-  const cashier2Login = await loginUser(`conc-c2-${ts}@dukaflow.et`);
-  const manager1Login = await loginUser(`conc-m1-${ts}@dukaflow.et`);
-  const manager2Login = await loginUser(`conc-m2-${ts}@dukaflow.et`);
+  const ownerLogin = await loginUser(`conc-owner-${ts}@gatiiflow.com`);
+  const cashier1Login = await loginUser(`conc-c1-${ts}@gatiiflow.com`);
+  const cashier2Login = await loginUser(`conc-c2-${ts}@gatiiflow.com`);
+  const manager1Login = await loginUser(`conc-m1-${ts}@gatiiflow.com`);
+  const manager2Login = await loginUser(`conc-m2-${ts}@gatiiflow.com`);
 
   const ownerToken = ownerLogin.session.token;
   const cashier1Token = cashier1Login.session.token;
@@ -352,7 +352,7 @@ async function runConcurrencyTests() {
   // TEST 3: CONCURRENT INVITATION ACCEPTANCE
   // =========================================================================
   await test('3. Concurrent Invitation Acceptance: prevent double acceptance of same invitation', async () => {
-    const inviteeEmail = `invitee-conc-${ts}@dukaflow.et`;
+    const inviteeEmail = `invitee-conc-${ts}@gatiiflow.com`;
 
     // 1. Owner creates invitation for email that does not exist in DB yet
     const invRes = await fetch(`${serverUrl}/api/v1/business/members/invite`, {
@@ -420,7 +420,7 @@ async function runConcurrencyTests() {
   // TEST 4: INVITATION ACCEPTANCE VS REVOCATION RACE
   // =========================================================================
   await test('4. Invitation Acceptance vs Revocation Race: serialize safely without orphan state', async () => {
-    const inviteeEmail = `invitee-race-${ts}@dukaflow.et`;
+    const inviteeEmail = `invitee-race-${ts}@gatiiflow.com`;
 
     // 1. Owner creates invitation for email that does not exist in DB yet
     const invRes = await fetch(`${serverUrl}/api/v1/business/members/invite`, {

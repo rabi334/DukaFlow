@@ -3,8 +3,11 @@ import './globals.css';
 import { ThemeProvider } from '@/components/ThemeProvider';
 
 export const metadata: Metadata = {
-  title: 'DukaFlow | Smart Business Management System',
-  description: 'Smart retail and business management system for Ethiopian SMEs',
+  title: 'GatiiFlow – Smart Business Management Platform',
+  description: 'Manage sales, inventory, purchases, expenses, staff, and business performance with GatiiFlow.',
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({

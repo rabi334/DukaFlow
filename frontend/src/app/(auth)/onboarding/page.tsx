@@ -67,6 +67,8 @@ function OnboardingForm() {
 
       const data = response.data;
       if (data.business?.id) {
+        localStorage.setItem('gatiiflow_active_org_id', data.business.id);
+        localStorage.setItem('gatiiflow_active_org_name', data.business.name);
         localStorage.setItem('dukaflow_active_org_id', data.business.id);
         localStorage.setItem('dukaflow_active_org_name', data.business.name);
       }

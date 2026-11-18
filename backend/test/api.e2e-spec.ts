@@ -18,7 +18,7 @@ jest.mock('../src/config/auth', () => ({
   },
 }));
 
-describe('DukaFlow Core API E2E & Business Rules', () => {
+describe('GatiiFlow Core API E2E & Business Rules', () => {
   let app: INestApplication;
   let prisma: PrismaService;
   let salesService: SalesService;
@@ -44,8 +44,13 @@ describe('DukaFlow Core API E2E & Business Rules', () => {
     });
     testOrgId = org!.id;
 
-    const cashier = await prisma.user.findUnique({
-      where: { email: 'cashier@dukaflow.et' },
+    const cashier = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: 'cashier@gatiiflow.com' },
+          { email: 'cashier@dukaflow.et' },
+        ],
+      },
     });
     cashierUserId = cashier!.id;
   });

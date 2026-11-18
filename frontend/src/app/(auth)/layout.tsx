@@ -26,10 +26,10 @@ export default function AuthLayout({
             </div>
             <div>
               <span className="font-extrabold text-2xl tracking-tight bg-gradient-to-r from-emerald-400 to-teal-200 bg-clip-text text-transparent">
-                DukaFlow
+                GatiiFlow
               </span>
               <span className="block text-[11px] font-semibold text-emerald-300/80 uppercase tracking-widest">
-                Ethiopian Retail OS
+                Smart Business Platform
               </span>
             </div>
           </Link>
@@ -82,7 +82,7 @@ export default function AuthLayout({
 
         {/* Footer */}
         <div className="relative z-10 text-xs text-slate-400 flex items-center justify-between">
-          <span>&copy; {new Date().getFullYear()} DukaFlow Technologies. Addis Ababa, Ethiopia.</span>
+          <span>&copy; {new Date().getFullYear()} GatiiFlow Technologies. Addis Ababa, Ethiopia.</span>
           <span>Made for modern retail</span>
         </div>
       </div>
@@ -96,7 +96,7 @@ export default function AuthLayout({
               <Store className="w-5 h-5" />
             </div>
             <span className="font-bold text-xl tracking-tight text-emerald-600 dark:text-emerald-400">
-              DukaFlow
+              GatiiFlow
             </span>
           </Link>
           <div className="ml-auto">
@@ -110,8 +110,8 @@ export default function AuthLayout({
 
         <div className="w-full max-w-md mx-auto text-center text-xs text-slate-400 dark:text-slate-500">
           Need assistance? Contact support at{' '}
-          <a href="mailto:support@dukaflow.et" className="text-emerald-600 dark:text-emerald-400 hover:underline">
-            support@dukaflow.et
+          <a href="mailto:support@gatiiflow.com" className="text-emerald-600 dark:text-emerald-400 hover:underline">
+            support@gatiiflow.com
           </a>
         </div>
       </div>

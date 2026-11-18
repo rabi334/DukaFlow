@@ -50,11 +50,15 @@ function RegisterForm() {
 
       const data = response.data;
       if (data.token) {
+        sessionStorage.setItem('gatiiflow_session_token', data.token);
+        localStorage.setItem('gatiiflow_session_token', data.token);
         sessionStorage.setItem('dukaflow_session_token', data.token);
         localStorage.setItem('dukaflow_session_token', data.token);
       }
 
       if (data.user?.email) {
+        localStorage.setItem('gatiiflow_user_email', data.user.email);
+        localStorage.setItem('gatiiflow_user_name', data.user.name || name.trim());
         localStorage.setItem('dukaflow_user_email', data.user.email);
         localStorage.setItem('dukaflow_user_name', data.user.name || name.trim());
       }
@@ -81,7 +85,7 @@ function RegisterForm() {
           Create Business Account
         </h2>
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          Get started with DukaFlow to manage your shop, POS, and inventory.
+          Get started with GatiiFlow to manage your shop, POS, and inventory.
         </p>
       </div>
 

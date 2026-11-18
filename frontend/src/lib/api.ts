@@ -13,14 +13,20 @@ export const api = axios.create({
 // Request interceptor: Attach verified session token & selected active workspace
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
-    // If client is using bearer tokens (e.g. mobile/webview or token storage)
-    const token = sessionStorage.getItem('dukaflow_session_token') || localStorage.getItem('dukaflow_session_token');
+    // If client is using bearer tokens (supporting gatiiflow_* with fallback to legacy dukaflow_*)
+    const token =
+      sessionStorage.getItem('gatiiflow_session_token') ||
+      sessionStorage.getItem('dukaflow_session_token') ||
+      localStorage.getItem('gatiiflow_session_token') ||
+      localStorage.getItem('dukaflow_session_token');
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
 
     // Attach active organization only if explicitly selected by the authenticated user
-    const activeOrgId = localStorage.getItem('dukaflow_active_org_id');
+    const activeOrgId =
+      localStorage.getItem('gatiiflow_active_org_id') ||
+      localStorage.getItem('dukaflow_active_org_id');
     if (activeOrgId) {
       config.headers['x-organization-id'] = activeOrgId;
     }
@@ -33,8 +39,10 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (typeof window !== 'undefined' && error.response?.status === 401) {
-      // Clear invalid session tokens
+      // Clear invalid session tokens (both new and legacy keys)
+      sessionStorage.removeItem('gatiiflow_session_token');
       sessionStorage.removeItem('dukaflow_session_token');
+      localStorage.removeItem('gatiiflow_session_token');
       localStorage.removeItem('dukaflow_session_token');
 
       // If user is on a protected route, redirect to login

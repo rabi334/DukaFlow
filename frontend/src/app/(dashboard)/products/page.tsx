@@ -67,7 +67,7 @@ export default function ProductsPage() {
 
   const loadData = async () => {
     setLoading(true);
-    const role = (localStorage.getItem('dukaflow_user_role') || 'owner').toLowerCase();
+    const role = (localStorage.getItem('gatiiflow_user_role') || localStorage.getItem('dukaflow_user_role') || 'owner').toLowerCase();
     setUserRole(role);
 
     try {

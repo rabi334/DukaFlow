@@ -84,7 +84,7 @@ enum MemberStatus {
   DEACTIVATED
 }
 
-// Organization represents a Business Workspace in DukaFlow
+// Organization represents a Business Workspace in GatiiFlow
 model Organization {
   id             String    @id @default(uuid())
   name           String
@@ -155,7 +155,7 @@ model Invitation {
 }
 
 // ==========================================
-// DUKAFLOW OPERATIONAL MODELS
+// GATIIFLOW OPERATIONAL MODELS
 // ==========================================
 
 model Branch {

@@ -6,7 +6,7 @@ import { ProductsService } from '../src/modules/products/products.service';
 import { PaymentMethod } from '@prisma/client';
 
 async function runTests() {
-  console.log('🧪 Starting DukaFlow Automated System Verification...');
+  console.log('🧪 Starting GatiiFlow Automated System Verification...');
 
   const app = await NestFactory.createApplicationContext(AppModule, { logger: false });
   const prisma = app.get(PrismaService);
@@ -18,7 +18,14 @@ async function runTests() {
     if (!org) throw new Error('Seeded organization not found');
     const orgId = org.id;
 
-    const cashier = await prisma.user.findUnique({ where: { email: 'cashier@dukaflow.et' } });
+    const cashier = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: 'cashier@gatiiflow.com' },
+          { email: 'cashier@dukaflow.et' },
+        ],
+      },
+    });
     if (!cashier) throw new Error('Seeded cashier not found');
     const cashierId = cashier.id;
 

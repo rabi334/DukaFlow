@@ -7,7 +7,7 @@ import { AppRole, AppPermission, roleHasPermission } from '../src/common/auth/pe
 
 async function runIndependentAudit() {
   console.log('=================================================================================');
-  console.log('   DUKAFLOW INDEPENDENT PHASE 2 RBAC & SECURITY AUDIT TEST SUITE');
+  console.log('   GATIIFLOW INDEPENDENT PHASE 2 RBAC & SECURITY AUDIT TEST SUITE');
   console.log('=================================================================================\n');
 
   const app = await NestFactory.create(AppModule, { logger: ['error', 'warn'] });
@@ -71,19 +71,19 @@ async function runIndependentAudit() {
     // ==================================================================
     console.log('--- Setting up Tenant A & Tenant B with multi-role accounts ---');
     // Tenant A users
-    const ownerA = await registerUser('Owner A', `ownerA_${ts}@dukaflow.et`);
-    const managerA = await registerUser('Manager A', `managerA_${ts}@dukaflow.et`);
-    const cashierA = await registerUser('Cashier A', `cashierA_${ts}@dukaflow.et`);
-    const invStaffA = await registerUser('InvStaff A', `invstaffA_${ts}@dukaflow.et`);
-    const invitedUserA = await registerUser('Invited User A', `invitedA_${ts}@dukaflow.et`);
-    const deactivatedCashierA = await registerUser('Deactivated Cashier A', `deactA_${ts}@dukaflow.et`);
+    const ownerA = await registerUser('Owner A', `ownerA_${ts}@gatiiflow.com`);
+    const managerA = await registerUser('Manager A', `managerA_${ts}@gatiiflow.com`);
+    const cashierA = await registerUser('Cashier A', `cashierA_${ts}@gatiiflow.com`);
+    const invStaffA = await registerUser('InvStaff A', `invstaffA_${ts}@gatiiflow.com`);
+    const invitedUserA = await registerUser('Invited User A', `invitedA_${ts}@gatiiflow.com`);
+    const deactivatedCashierA = await registerUser('Deactivated Cashier A', `deactA_${ts}@gatiiflow.com`);
 
     // Tenant B users
-    const ownerB = await registerUser('Owner B', `ownerB_${ts}@dukaflow.et`);
-    const cashierB = await registerUser('Cashier B', `cashierB_${ts}@dukaflow.et`);
+    const ownerB = await registerUser('Owner B', `ownerB_${ts}@gatiiflow.com`);
+    const cashierB = await registerUser('Cashier B', `cashierB_${ts}@gatiiflow.com`);
 
     // Platform admin (no tenant membership)
-    const platAdmin = await registerUser('Platform Admin', `platadmin_${ts}@dukaflow.et`);
+    const platAdmin = await registerUser('Platform Admin', `platadmin_${ts}@gatiiflow.com`);
 
     // Onboard Tenant A
     const onboardARes = await fetch(`${serverUrl}/api/v1/business/onboard`, {

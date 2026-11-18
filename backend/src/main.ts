@@ -23,10 +23,10 @@ async function bootstrap() {
 
   // Swagger OpenAPI documentation
   const config = new DocumentBuilder()
-    .setTitle('DukaFlow API')
-    .setDescription('Smart Business Management System REST API for Ethiopian SMEs')
+    .setTitle('GatiiFlow API')
+    .setDescription('REST API for the GatiiFlow Smart Business Management Platform')
     .setVersion('1.0')
-    .addTag('DukaFlow')
+    .addTag('GatiiFlow')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
@@ -34,7 +34,7 @@ async function bootstrap() {
 
   const port = process.env.PORT || 5000;
   await app.listen(port);
-  console.log(`🚀 DukaFlow Backend running on: http://localhost:${port}`);
+  console.log(`🚀 GatiiFlow Backend running on: http://localhost:${port}`);
   console.log(`📚 Swagger documentation at: http://localhost:${port}/api/docs`);
 }
 

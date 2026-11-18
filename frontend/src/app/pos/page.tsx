@@ -716,7 +716,7 @@ export default function PosPage() {
                 {/* Footer */}
                 <div className="border-t border-dashed border-slate-300 dark:border-slate-700 pt-3 text-center text-[10px] text-slate-500">
                   <p>{completedSale.organization?.receiptFooter || 'Thank you for shopping with us!'}</p>
-                  <p className="mt-1">Powered by DukaFlow</p>
+                  <p className="mt-1">Powered by GatiiFlow</p>
                 </div>
               </div>
 

@@ -46,11 +46,11 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
   const [shopCity, setShopCity] = useState('Addis Ababa');
 
   useEffect(() => {
-    // 1. Initial state from local storage
+    // 1. Initial state from local storage (supporting both gatiiflow_* and legacy dukaflow_*)
     if (typeof window !== 'undefined') {
-      const storedName = localStorage.getItem('dukaflow_user_name');
-      const storedRole = localStorage.getItem('dukaflow_user_role');
-      const storedShop = localStorage.getItem('dukaflow_active_org_name');
+      const storedName = localStorage.getItem('gatiiflow_user_name') || localStorage.getItem('dukaflow_user_name');
+      const storedRole = localStorage.getItem('gatiiflow_user_role') || localStorage.getItem('dukaflow_user_role');
+      const storedShop = localStorage.getItem('gatiiflow_active_org_name') || localStorage.getItem('dukaflow_active_org_name');
       if (storedName) setUserName(storedName);
       if (storedRole) setUserRole(storedRole);
       if (storedShop) setShopName(storedShop);
@@ -63,10 +63,11 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
         const { user, workspaces } = res.data;
         if (user?.name) {
           setUserName(user.name);
+          localStorage.setItem('gatiiflow_user_name', user.name);
           localStorage.setItem('dukaflow_user_name', user.name);
         }
 
-        const activeOrgId = localStorage.getItem('dukaflow_active_org_id');
+        const activeOrgId = localStorage.getItem('gatiiflow_active_org_id') || localStorage.getItem('dukaflow_active_org_id');
         const activeWs =
           workspaces?.find((w: any) => w.id === activeOrgId) || workspaces?.[0];
 
@@ -75,6 +76,9 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
           setShopCity(activeWs.city || 'Addis Ababa');
           const cleanRole = (activeWs.role || 'Member').toLowerCase();
           setUserRole(cleanRole);
+          localStorage.setItem('gatiiflow_user_role', cleanRole);
+          localStorage.setItem('gatiiflow_active_org_id', activeWs.id);
+          localStorage.setItem('gatiiflow_active_org_name', activeWs.name);
           localStorage.setItem('dukaflow_user_role', cleanRole);
           localStorage.setItem('dukaflow_active_org_id', activeWs.id);
           localStorage.setItem('dukaflow_active_org_name', activeWs.name);
@@ -92,13 +96,19 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
       // Proceed even if network logout fails
     } finally {
       if (typeof window !== 'undefined') {
-        sessionStorage.removeItem('dukaflow_session_token');
-        localStorage.removeItem('dukaflow_session_token');
-        localStorage.removeItem('dukaflow_user_email');
-        localStorage.removeItem('dukaflow_user_name');
-        localStorage.removeItem('dukaflow_user_role');
-        localStorage.removeItem('dukaflow_active_org_id');
-        localStorage.removeItem('dukaflow_active_org_name');
+        // Clear both gatiiflow and legacy dukaflow keys
+        const keysToRemove = [
+          'gatiiflow_session_token', 'dukaflow_session_token',
+          'gatiiflow_user_email', 'dukaflow_user_email',
+          'gatiiflow_user_name', 'dukaflow_user_name',
+          'gatiiflow_user_role', 'dukaflow_user_role',
+          'gatiiflow_active_org_id', 'dukaflow_active_org_id',
+          'gatiiflow_active_org_name', 'dukaflow_active_org_name'
+        ];
+        keysToRemove.forEach(k => {
+          sessionStorage.removeItem(k);
+          localStorage.removeItem(k);
+        });
       }
       router.push('/login');
     }
@@ -109,7 +119,7 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
     .filter(Boolean)
     .slice(0, 2)
     .map((n) => n[0].toUpperCase())
-    .join('') || 'DF';
+    .join('') || 'GF';
 
   // Role-based navigation filtering
   const roleNorm = (userRole || '').toLowerCase().trim();
@@ -157,10 +167,10 @@ export function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
             </div>
             <div>
               <span className="font-bold text-lg tracking-tight bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-300 bg-clip-text text-transparent">
-                DukaFlow
+                GatiiFlow
               </span>
               <span className="block text-[11px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                Ethiopian Retail OS
+                Smart Business Platform
               </span>
             </div>
           </Link>

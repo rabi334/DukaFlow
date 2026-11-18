@@ -6,7 +6,7 @@ import { PaymentMethod, SaleStatus, MemberStatus } from '@prisma/client';
 
 async function runVatAndTimezoneTests() {
   console.log('========================================================================');
-  console.log('  DUKAFLOW: FINAL VAT & BUSINESS-TIMEZONE VERIFICATION SUITE');
+  console.log('  GATIIFLOW: FINAL VAT & BUSINESS-TIMEZONE VERIFICATION SUITE');
   console.log('========================================================================\n');
 
   const app = await NestFactory.create(AppModule, { logger: ['error', 'warn'] });
@@ -64,11 +64,11 @@ async function runVatAndTimezoneTests() {
 
   // 1. Setup workspace & accounts
   console.log('--- Setting up test workspace for VAT & Timezone verification ---');
-  const ownerReg = await registerUser('VAT Owner', `vat-owner-${ts}@dukaflow.et`);
-  const cashierReg = await registerUser('VAT Cashier', `vat-cashier-${ts}@dukaflow.et`);
+  const ownerReg = await registerUser('VAT Owner', `vat-owner-${ts}@gatiiflow.com`);
+  const cashierReg = await registerUser('VAT Cashier', `vat-cashier-${ts}@gatiiflow.com`);
 
-  const ownerLogin = await loginUser(`vat-owner-${ts}@dukaflow.et`);
-  const cashierLogin = await loginUser(`vat-cashier-${ts}@dukaflow.et`);
+  const ownerLogin = await loginUser(`vat-owner-${ts}@gatiiflow.com`);
+  const cashierLogin = await loginUser(`vat-cashier-${ts}@gatiiflow.com`);
 
   const ownerToken = ownerLogin.session.token;
   const cashierToken = cashierLogin.session.token;

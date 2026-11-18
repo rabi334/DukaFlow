@@ -6,7 +6,7 @@ import { PaymentMethod, PurchaseStatus, SaleStatus, StockMovementType, MemberSta
 
 async function runFinalAuditTests() {
   console.log('========================================================================');
-  console.log('  DUKAFLOW PHASE 3: FINAL INDEPENDENT ACCEPTANCE AUDIT TEST SUITE');
+  console.log('  GATIIFLOW PHASE 3: FINAL INDEPENDENT ACCEPTANCE AUDIT TEST SUITE');
   console.log('========================================================================\n');
 
   const app = await NestFactory.create(AppModule, { logger: ['error', 'warn'] });
@@ -64,11 +64,11 @@ async function runFinalAuditTests() {
 
   // 1. Setup workspace & accounts
   console.log('--- Setting up test workspace for final audit ---');
-  const ownerReg = await registerUser('Audit Owner', `audit-owner-${ts}@dukaflow.et`);
-  const cashierReg = await registerUser('Audit Cashier', `audit-cashier-${ts}@dukaflow.et`);
+  const ownerReg = await registerUser('Audit Owner', `audit-owner-${ts}@gatiiflow.com`);
+  const cashierReg = await registerUser('Audit Cashier', `audit-cashier-${ts}@gatiiflow.com`);
 
-  const ownerLogin = await loginUser(`audit-owner-${ts}@dukaflow.et`);
-  const cashierLogin = await loginUser(`audit-cashier-${ts}@dukaflow.et`);
+  const ownerLogin = await loginUser(`audit-owner-${ts}@gatiiflow.com`);
+  const cashierLogin = await loginUser(`audit-cashier-${ts}@gatiiflow.com`);
 
   const ownerToken = ownerLogin.session.token;
   const cashierToken = cashierLogin.session.token;

@@ -47,12 +47,16 @@ function LoginForm() {
 
       const data = response.data;
       if (data.token) {
-        // Store session token for optional bearer header support
+        // Store session token for optional bearer header support (with backwards compatibility)
+        sessionStorage.setItem('gatiiflow_session_token', data.token);
+        localStorage.setItem('gatiiflow_session_token', data.token);
         sessionStorage.setItem('dukaflow_session_token', data.token);
         localStorage.setItem('dukaflow_session_token', data.token);
       }
 
       if (data.user?.email) {
+        localStorage.setItem('gatiiflow_user_email', data.user.email);
+        localStorage.setItem('gatiiflow_user_name', data.user.name || '');
         localStorage.setItem('dukaflow_user_email', data.user.email);
         localStorage.setItem('dukaflow_user_name', data.user.name || '');
       }
@@ -74,6 +78,8 @@ function LoginForm() {
         );
 
         if (activeWorkspaces.length > 0) {
+          localStorage.setItem('gatiiflow_active_org_id', activeWorkspaces[0].id);
+          localStorage.setItem('gatiiflow_active_org_name', activeWorkspaces[0].name);
           localStorage.setItem('dukaflow_active_org_id', activeWorkspaces[0].id);
           localStorage.setItem('dukaflow_active_org_name', activeWorkspaces[0].name);
         }
@@ -99,7 +105,7 @@ function LoginForm() {
     <div className="space-y-6">
       <div className="space-y-2">
         <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-          Sign In to DukaFlow
+          Sign In to GatiiFlow
         </h2>
         <p className="text-sm text-slate-500 dark:text-slate-400">
           Enter your registered email and password to access your store.

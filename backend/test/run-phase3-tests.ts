@@ -6,7 +6,7 @@ import { MemberStatus, PaymentMethod, PurchaseStatus, SaleStatus, StockMovementT
 
 async function runPhase3Tests() {
   console.log('========================================================================');
-  console.log('  DUKAFLOW PHASE 3: CORE BUSINESS WORKFLOWS VERIFICATION SUITE');
+  console.log('  GATIIFLOW PHASE 3: CORE BUSINESS WORKFLOWS VERIFICATION SUITE');
   console.log('========================================================================\n');
 
   const app = await NestFactory.create(AppModule, { logger: ['error', 'warn'] });
@@ -64,15 +64,15 @@ async function runPhase3Tests() {
 
   // 1. Setup Business & Users
   console.log('--- Setting up test workspace & multi-role staff ---');
-  const ownerReg = await registerUser('Phase3 Owner', `p3-owner-${ts}@dukaflow.et`);
-  const cashierReg = await registerUser('Phase3 Cashier', `p3-cashier-${ts}@dukaflow.et`);
-  const managerReg = await registerUser('Phase3 Manager', `p3-mgr-${ts}@dukaflow.et`);
-  const invStaffReg = await registerUser('Phase3 Inventory', `p3-inv-${ts}@dukaflow.et`);
+  const ownerReg = await registerUser('Phase3 Owner', `p3-owner-${ts}@gatiiflow.com`);
+  const cashierReg = await registerUser('Phase3 Cashier', `p3-cashier-${ts}@gatiiflow.com`);
+  const managerReg = await registerUser('Phase3 Manager', `p3-mgr-${ts}@gatiiflow.com`);
+  const invStaffReg = await registerUser('Phase3 Inventory', `p3-inv-${ts}@gatiiflow.com`);
 
-  const ownerLogin = await loginUser(`p3-owner-${ts}@dukaflow.et`);
-  const cashierLogin = await loginUser(`p3-cashier-${ts}@dukaflow.et`);
-  const managerLogin = await loginUser(`p3-mgr-${ts}@dukaflow.et`);
-  const invStaffLogin = await loginUser(`p3-inv-${ts}@dukaflow.et`);
+  const ownerLogin = await loginUser(`p3-owner-${ts}@gatiiflow.com`);
+  const cashierLogin = await loginUser(`p3-cashier-${ts}@gatiiflow.com`);
+  const managerLogin = await loginUser(`p3-mgr-${ts}@gatiiflow.com`);
+  const invStaffLogin = await loginUser(`p3-inv-${ts}@gatiiflow.com`);
 
   const ownerToken = ownerLogin.session.token;
   const cashierToken = cashierLogin.session.token;
@@ -147,7 +147,7 @@ async function runPhase3Tests() {
       method: 'POST',
       headers: ownerHeaders,
       body: JSON.stringify({
-        name: 'DukaFlow Premium Teff 25kg',
+        name: 'GatiiFlow Premium Teff 25kg',
         sku: `TEFF-25KG-${ts}`,
         barcode: `BAR-TEFF-${ts}`,
         unit: 'bag',
@@ -221,7 +221,7 @@ async function runPhase3Tests() {
       method: 'PATCH',
       headers: ownerHeaders,
       body: JSON.stringify({
-        name: 'DukaFlow Premium White Teff 25kg (Magna)',
+        name: 'GatiiFlow Premium White Teff 25kg (Magna)',
         sellingPrice: 3500,
         minStockThreshold: 12,
       }),
@@ -230,7 +230,7 @@ async function runPhase3Tests() {
     if (updateRes.status !== 200) throw new Error(`Expected 200, got ${updateRes.status}`);
     const updated = await updateRes.json();
     if (Number(updated.sellingPrice) !== 3500) throw new Error('Selling price not updated');
-    if (updated.name !== 'DukaFlow Premium White Teff 25kg (Magna)') throw new Error('Name not updated');
+    if (updated.name !== 'GatiiFlow Premium White Teff 25kg (Magna)') throw new Error('Name not updated');
   });
 
   await test('5. Product archive and restore lifecycle', async () => {
@@ -634,7 +634,7 @@ async function runPhase3Tests() {
   // =========================================================================
 
   let testInviteId: string;
-  const inviteeEmail = `invitee-${ts}@dukaflow.et`;
+  const inviteeEmail = `invitee-${ts}@gatiiflow.com`;
 
   await test('19. Invite staff by email & list pending invitations', async () => {
     const inviteRes = await fetch(`${serverUrl}/api/v1/business/members/invite`, {

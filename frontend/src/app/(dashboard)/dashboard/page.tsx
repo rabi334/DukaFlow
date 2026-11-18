@@ -51,12 +51,12 @@ export default function DashboardPage() {
 
   const loadRoleAndData = async () => {
     setLoading(true);
-    let role = (localStorage.getItem('dukaflow_user_role') || '').toLowerCase().trim();
+    let role = (localStorage.getItem('gatiiflow_user_role') || localStorage.getItem('dukaflow_user_role') || '').toLowerCase().trim();
 
     try {
       // 1. Refresh active role from /api/v1/auth/me
       const meRes = await api.get('/api/v1/auth/me');
-      const activeOrgId = localStorage.getItem('dukaflow_active_org_id');
+      const activeOrgId = localStorage.getItem('gatiiflow_active_org_id') || localStorage.getItem('dukaflow_active_org_id');
       const activeWs =
         meRes.data.workspaces?.find((w: any) => w.id === activeOrgId) ||
         meRes.data.workspaces?.[0];
@@ -64,6 +64,7 @@ export default function DashboardPage() {
       if (activeWs?.role) {
         role = activeWs.role.toLowerCase().trim();
         setUserRole(role);
+        localStorage.setItem('gatiiflow_user_role', role);
         localStorage.setItem('dukaflow_user_role', role);
       }
     } catch {

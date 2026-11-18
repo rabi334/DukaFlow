@@ -1,6 +1,11 @@
-# DukaFlow
+# GatiiFlow
 
-Smart Business Management System for Small and Medium-Sized Businesses in Ethiopia.
+> **Your Business. In Flow With Gatii**  
+> *Smart Business Management Platform*
+
+*Formerly named DukaFlow. The product was rebranded to GatiiFlow on November 18, 2026.*
+
+GatiiFlow helps retailers manage sales, inventory, purchases, expenses, staff, and business performance from one connected platform. Engineered for small and medium-sized businesses in Ethiopia with native ETB currency support, dual tax systems (15% VAT inclusive & exclusive), Africa/Addis_Ababa business timezone reconciliation, atomic inventory deductions, and multi-tenant security.
 
 ## Architecture
 

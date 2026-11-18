@@ -4,20 +4,20 @@ import { hashPassword } from 'better-auth/crypto';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('--- Seeding DukaFlow database ---');
+  console.log('--- Seeding GatiiFlow database ---');
 
   // Compute Better Auth cryptographic password hash for password123
   const hashedPassword = await hashPassword('password123');
 
   // 1. Create Demo Owner User
   const ownerUser = await prisma.user.upsert({
-    where: { email: 'owner@dukaflow.et' },
+    where: { email: 'owner@gatiiflow.com' },
     update: {
       name: 'Abebe Bikila',
     },
     create: {
       name: 'Abebe Bikila',
-      email: 'owner@dukaflow.et',
+      email: 'owner@gatiiflow.com',
       emailVerified: true,
       image: null,
     },
@@ -43,13 +43,13 @@ async function main() {
 
   // 2. Create Demo Cashier User
   const cashierUser = await prisma.user.upsert({
-    where: { email: 'cashier@dukaflow.et' },
+    where: { email: 'cashier@gatiiflow.com' },
     update: {
       name: 'Tigist Assefa',
     },
     create: {
       name: 'Tigist Assefa',
-      email: 'cashier@dukaflow.et',
+      email: 'cashier@gatiiflow.com',
       emailVerified: true,
       image: null,
     },
