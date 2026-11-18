@@ -15,6 +15,7 @@ import {
   CreditCard,
   LogOut,
   Building,
+  BarChart3,
 } from 'lucide-react';
 import { api } from '@/lib/api';
 
@@ -26,6 +27,7 @@ interface SidebarProps {
 const navItems = [
   { href: '/pos', label: 'Point of Sale (POS)', icon: CreditCard, highlight: true },
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/reports', label: 'Reports & Analytics', icon: BarChart3 },
   { href: '/sales', label: 'Sales & Returns', icon: Receipt },
   { href: '/products', label: 'Products & Catalog', icon: Package },
   { href: '/inventory', label: 'Inventory & Stock', icon: Boxes },

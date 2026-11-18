@@ -22,6 +22,7 @@
     "test:concurrency": "ts-node test/run-concurrency-tests.ts",
     "test:vat-timezone": "ts-node test/run-vat-and-timezone-tests.ts",
     "test:final-audit": "ts-node test/run-final-audit-tests.ts",
+    "test:phase4": "ts-node test/run-phase4-tests.ts",
     "test:verify": "ts-node test/system-verify.ts"
   },
   "dependencies": {
